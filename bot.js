@@ -47,6 +47,22 @@ client.on("messageCreate", async msg => {
         case /^abbadabbabot.*/i.test(msg.content.toLowerCase()):
           abbadabbabotSay(msg);
           break;
+        case /^!engage_chat.*/i.test(msg.content.toLowerCase()):
+          const channels = msg.guild.channels.cache.filter(channel => channel.type === 'GUILD_TEXT');
+
+          if (channels.size === 0) {
+            msg.reply("No text channels found in this guild.");
+            break;
+          } else {
+
+            const randomChannel = channels.random();
+            const channel_title = randomChannel.name;
+            console.log('random message to ', channel_title)
+            msg.reply(`Attempting to engage chat in ${channel_title}`);
+            sendMessageToChannel(`Write a random question to try and engage conversation in this discord channel. The channel title is: ${channel_title}, assume a random topic based off the channel.`, randomChannel.id, '', '');
+
+          }
+        break;
         case /^!sched.*/i.test(msg.content.toLowerCase()):
           current_next_stream = settings_db.get("next_stream");
           current_next_stream_prompt = settings_db.get("stream_prompt");

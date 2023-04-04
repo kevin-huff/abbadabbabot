@@ -38,6 +38,7 @@ Here are some example commands:
 -   `!sched`: Get the current stream schedule or a generated response if no schedule is set.
 -   `!next_stream`: Set the date and time of the next stream and an optional prompt.
 -   `!dn_count`: Get the number of "deeze nutz" jokes recorded in the server.
+-   `!engage_chat`: Attempts to engage chat in discussion in a random channel based off the channel's name.
 
 The bot also sends notifications when users join or leave voice channels, excluding specific channels as defined in the code.
 
