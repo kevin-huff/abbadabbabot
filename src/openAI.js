@@ -24,7 +24,7 @@ const chain = new ConversationChain({
   llm: chat,
 });
 
-async function abbadabbabotSay(msg, prefix = "v4 ", postfix = "") {
+async function abbadabbabotSay(msg, prefix = "", postfix = "") {
   console.log(systemPrompt);
   let messageContent;
   let username = "Unknown";
@@ -69,7 +69,7 @@ async function abbadabbabotSay(msg, prefix = "v4 ", postfix = "") {
 async function sendMessageToChannel(
   inputString,
   channelID,
-  prefix = "v4",
+  prefix = "",
   postfix = "",
   client
 ) {
