@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Schedule Manager</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    form {
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    #spinner {
+      text-align: center;
+    }
+    #calendar {
+    width: 350px;  /* Increase the width */
+    border: 1px solid #ccc;
+    overflow: hidden;
+    }
+    #calendar-header {
+    background-color: #f2f2f2;
+    text-align: center;
+    padding: 10px;
+    }
+    #calendar-body {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    }
+    .day {
+    padding: 15px;  /* Reduce the padding */
+    text-align: center;
+    box-sizing: border-box;
+    }
+    .highlight {
+    background-color: #ff0;
+    }
+
+  </style>
+</head>
+<body>
+
+  <form id="schedule-form">
+    <input type="text" id="dateTime" placeholder="Pick a date and time">
+    <input type="text" id="prompt" placeholder="Stream Prompt">
+    <button type="submit">Add Schedule</button>
+  </form>
+
+  <div id="spinner" style="display: none;">
+    <img src="spinner.gif" alt="Loading...">
+  </div>
+
+  <table id="schedule-list">
+    <thead>
+      <tr>
+        <th>Date-Time (ET)</th>
+        <th>Original Prompt</th>
+        <th>Generated Prompt</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Existing schedules will be populated here -->
+    </tbody>
+  </table>
+  <div id="calendar">
+    <div id="calendar-header">
+      <!-- Month and navigation will go here -->
+    </div>
+    <div id="calendar-body">
+      <!-- Days will go here -->
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.34/moment-timezone-with-data.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.3/html2canvas.min.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('schedule-form');
+      const list = document.getElementById('schedule-list').getElementsByTagName('tbody')[0];
+      let scheduledDays = [];
+        //Calendar stuff
+        const today = new Date();
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+        fetch('/api/schedule')
+        .then(res => res.json())
+        .then(data => {
+            scheduledDays = data.map(schedule => {
+            const dateTime = moment.tz(schedule.timestamp, "America/New_York");
+            return dateTime.date();  // Extract only the day part
+            });
+            populateCalendar();  // Call the function to populate the calendar
+            html2canvas(document.getElementById('calendar')).then(canvas => {
+            document.body.appendChild(canvas);
+            document.getElementById('calendar').style.display = 'none';  // Hide the HTML version
+            });
+        });
+
+
+        const calendarBody = document.getElementById('calendar-body');
+
+        for (let i = 1; i <= daysInMonth; i++) {
+        const dayElement = document.createElement('div');
+        dayElement.classList.add('day');
+        dayElement.textContent = i;
+
+        if (scheduledDays.includes(i)) {
+            dayElement.classList.add('highlight');
+        }
+
+        calendarBody.appendChild(dayElement);
+        }
+
+      // Initialize Flatpickr
+      flatpickr("#dateTime", {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+      });
+      
+
+      // Show spinner
+      const spinner = document.getElementById('spinner');
+      toggleSpinner(true);  // Show spinner
+
+      // Fetch existing schedules
+      fetch('/api/schedule')
+      .then(res => res.json())
+      .then(data => {
+        toggleSpinner(false);  // Hide spinner
+        populateCalendar();
+        data.forEach(schedule => {
+          const row = list.insertRow();
+          const cell1 = row.insertCell(0);
+          const cell2 = row.insertCell(1);
+          const cell3 = row.insertCell(2);
+          const cell4 = row.insertCell(3);
+
+          const dateTime = moment.tz(schedule.timestamp, "America/New_York").format('YYYY-MM-DD HH:mm:ss');
+          cell1.textContent = dateTime;
+          cell2.textContent = schedule.prompt;
+          cell3.textContent = schedule.generatedResponse;
+          cell4.innerHTML = `<button onclick="editSchedule(${schedule.timestamp})">Edit</button> <button onclick="deleteSchedule(${schedule.timestamp})">Delete</button>`;
+          row.setAttribute('data-timestamp', schedule.timestamp);
+
+        });
+      })
+      .catch(error => {
+        toggleSpinner(false);  // Hide spinner
+        console.error('Fetch failed:', error);
+      });
+
+      // Handle form submission
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const dateTime = document.getElementById('dateTime').value + " -05:00";
+        const prompt = document.getElementById('prompt').value;
+        toggleSpinner(true);  // Show spinner
+        fetch('/api/schedule', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ dateTime, prompt }),
+        })
+        .then(res => res.json())
+        .then(data => {
+          toggleSpinner(false);  // Hide spinner
+          populateCalendar();
+
+          const row = list.insertRow();
+          const cell1 = row.insertCell(0);
+          const cell2 = row.insertCell(1);
+          const cell3 = row.insertCell(2);
+          const cell4 = row.insertCell(3);
+
+          cell1.textContent = dateTime;
+          cell2.textContent = prompt;
+          cell3.textContent = data.generatedResponse;
+          cell4.innerHTML = `<button onclick="editSchedule(${data.timestamp})">Edit</button> <button onclick="deleteSchedule(${data.timestamp})">Delete</button>`;
+          row.setAttribute('data-timestamp', data.timestamp);
+
+        });
+      });
+      function populateCalendar() {
+        const today = new Date();
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+        const calendarBody = document.getElementById('calendar-body');
+        calendarBody.innerHTML = '';  // Clear previous entries
+
+        for (let i = 1; i <= daysInMonth; i++) {
+            const dayElement = document.createElement('div');
+            dayElement.classList.add('day');
+            dayElement.textContent = i;
+
+            if (scheduledDays.includes(i)) {
+            dayElement.classList.add('highlight');
+            }
+
+            calendarBody.appendChild(dayElement);
+        }
+        }
+    });
+    function editSchedule(timestamp) {
+        // Find the row corresponding to the timestamp
+        const rows = document.querySelectorAll('#schedule-list tbody tr');
+        let targetRow;
+        for (const row of rows) {
+            const cell = row.cells[0];
+            const cellTime = moment.tz(cell.textContent, "America/New_York").valueOf();
+            if (cellTime === timestamp) {
+            targetRow = row;
+            break;
+            }
+        }
+
+        if (!targetRow) return;
+
+        // Convert the cells to form fields
+        const dateTimeCell = targetRow.cells[0];
+        const promptCell = targetRow.cells[1];
+        const actionCell = targetRow.cells[3];
+
+        const dateTimeValue = dateTimeCell.textContent;
+        const promptValue = promptCell.textContent;
+
+        dateTimeCell.innerHTML = `<input type="text" id="edit-dateTime-${timestamp}" value="${dateTimeValue}">`;
+        promptCell.innerHTML = `<input type="text" id="edit-prompt-${timestamp}" value="${promptValue}">`;
+        actionCell.innerHTML = `<button onclick="saveSchedule(${timestamp})">Save</button>`;
+
+        // Initialize Flatpickr for the date-time input field
+        flatpickr(`#edit-dateTime-${timestamp}`, {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+        });
+        }
+
+    async function deleteSchedule(timestamp) {
+        console.log('Deleting schedule');
+        toggleSpinner(true);  // Hide spinner
+        // Send the DELETE request to the server
+        const response = await fetch(`/api/schedule/delete/${timestamp}`, {
+            method: 'DELETE',
+        });
+        toggleSpinner(false);  // Show spinner
+        populateCalendar();
+        if (response.ok) {
+            // Remove the corresponding row from the table
+            const targetRow = document.querySelector(`[data-timestamp="${timestamp}"]`);
+            if (targetRow) {
+            targetRow.remove();
+            } else {
+            console.error('Target row not found');
+            }
+        } else {
+            console.error('Failed to delete schedule');
+        }
+    }
+
+    async function saveSchedule(originalTimestamp) {
+        toggleSpinner(true);  // Show spinner
+        // Extract the new values from the form fields using their IDs
+        const newDateTime = document.getElementById(`edit-dateTime-${originalTimestamp}`).value;
+        const newPrompt = document.getElementById(`edit-prompt-${originalTimestamp}`).value;
+
+        // Convert the new date-time to a timestamp
+        const newTimestamp = moment.tz(newDateTime, "America/New_York").valueOf();
+
+        // Send the data to the server
+        const response = await fetch('/api/schedule/edit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ originalTimestamp, newTimestamp, newPrompt }),
+        });
+        toggleSpinner(false);  // Hide spinner
+        populateCalendar();
+        if (response.ok) {
+            const responseData = await response.json();
+            // Since we already know the original timestamp, we can find the corresponding row directly
+            const rows = document.querySelectorAll('#schedule-list tbody tr');
+            const targetRow = document.querySelector(`[data-timestamp="${originalTimestamp}"]`);
+
+            if (!targetRow) {
+                console.error('Target row not found');
+                return;
+            }
+
+            // Update the table cells with the new values
+            targetRow.cells[0].textContent = newDateTime;
+            targetRow.cells[1].textContent = newPrompt;
+            targetRow.cells[2].textContent = responseData.generatedResponse;
+            targetRow.cells[3].innerHTML = `<button onclick="editSchedule(${newTimestamp})">Edit</button> <button onclick="deleteSchedule(${newTimestamp})">Delete</button>`;
+
+        } else {
+            console.error('Failed to update schedule');
+        }
+    }
+    function toggleSpinner(show) {
+        const spinner = document.getElementById('spinner');
+        spinner.style.display = show ? 'block' : 'none';
+    }
+  </script>
+
+</body>
+</html>

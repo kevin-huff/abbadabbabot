@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaderboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;700&display=swap" rel="stylesheet">
+  <script src="/socket.io/socket.io.js"></script>
+   <style>
+        body {
+            height: 600px;
+            width: 800px;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+            font-family: 'Antonio', sans-serif;
+            color: #000;
+            background-color: #000000;
+        }
+        .grid-container {
+            display: grid;
+            height: 575px;
+            width: 790px;
+            box-sizing: border-box;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            grid-gap: 2px;
+            padding-block: 12px;
+            background: #000;
+            border-radius: 0 20px 20px 0;
+            margin-top: 20px;
+           }
+         .grid-lcars {
+           border-radius: 0 20px 20px 0;
+            display: flex;
+            height: 100%;
+            background: linear-gradient(#78f 50%, #d44 50%);
+
+         }
+        .grid-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            background: linear-gradient(45deg, #12c2e9, #c471ed, #f64f59);
+            border-radius: 100vmax;
+            padding: 2px;
+            box-sizing: border-box;
+            z-index: 3;
+        }
+
+        .name {
+            font-size: 2.5vh;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .details {
+            font-size: 2vh;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        @media only screen and (max-width: 800px) {
+            .name {
+                font-size: 2vh;
+            }
+
+            .details {
+                font-size: 1.5vh;
+            }
+        }
+        .highlight {
+          animation: highlight 1s linear infinite;
+        }
+
+        @keyframes highlight {
+          0% { color: #f1546b; }  // Start color of the gradient
+          50% { color: #00C2D1; }  // End color of the gradient
+          100% { color: #f1546b; }  // Loop back to the start color
+        }
+
+        .missed {
+            position: relative;
+        }
+
+        .missed::after {
+            content: 'X';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            color: red;
+            font-size: 5em;
+            text-align: center;
+            line-height: 1em;
+            opacity: 0.6;
+        }
+
+    </style>
+
+</head>
+<body>
+    <div class="grid-lcars">
+          <div class="grid-container">
+    </div>
+  </div>
+
+</body>
+<script type='text/javascript'>
+  
+window.onload = async function() {
+  const colors = [
+  "#f5f6fa",
+  "#ddbbff",
+  "#33cc99",
+  "#cc4499",
+  "#4455ff",
+  "#ffcc33",
+  "#9944ff",
+  "#ff7700",
+  "#cc88ff",
+  "#dd4444",
+  "#ffaa90",
+  "#ffbbaa",
+  "#ffcc66",
+  "#7788ff",
+  "#666688",
+  "#aaaaff",
+  "#88ccff",
+  "#ffaa00",
+  "#ff2200",
+  "#ff8866",
+  "#ff9966",
+  "#ff5555",
+  "#cc33ff"
+];
+
+  const responseCheckins = await fetch('/api/checkins');
+  const all_checkins = await responseCheckins.json();
+
+  const responseTotalCheckins = await fetch('/api/total_checkins');
+  const total_checkins = await responseTotalCheckins.json();
+
+  const responseLeaderboard = await fetch('/api/leaderboard');
+  let leaderboard = await responseLeaderboard.json();
+
+  const checkins = Object.values(all_checkins);
+  const missed_checkins_once = checkins.filter(checkin => total_checkins - checkin.count === 1);
+  const missed_checkins_twice = checkins.filter(checkin => total_checkins - checkin.count >= 2);
+  const missed_users_once = missed_checkins_once.map(checkin => Object.keys(all_checkins).find(key => all_checkins[key] === checkin));
+  const missed_users_twice = missed_checkins_twice.map(checkin => Object.keys(all_checkins).find(key => all_checkins[key] === checkin));
+
+  const container = document.querySelector('.grid-container');
+  for (let i = 0; i < leaderboard.length; i++) {
+    const entry = leaderboard[i];
+    const item = document.createElement('div');
+    item.classList.add('grid-item');
+    item.setAttribute('data-user', entry.username);
+    // Generate a random index into the colors array
+    const colorIndex = Math.floor(Math.random() * colors.length);
+    // Set the background color of the item
+    item.style.background = colors[colorIndex];
+    
+    const name = document.createElement('div');
+    name.classList.add('name');
+    name.textContent = entry.username;
+    if (missed_users_once.includes(entry.username)) {
+      name.classList.add('highlight');  // Add the highlight class if the user is one check-in behind
+    }
+    if (missed_users_twice.includes(entry.username)) {
+      item.classList.add('missed');  // Add the missed class if the user is two check-ins behind
+    }
+    item.appendChild(name);
+
+    const details = document.createElement('div');
+    details.classList.add('details');
+    details.textContent = `${entry.emoji} ${entry.count}/${entry.total}`;
+    item.appendChild(details);
+
+    container.appendChild(item);
+  }
+    var socket = io();
+  socket.on('missed_checkins', async (data) => {
+    const container = document.querySelector('.grid-container');
+    container.innerHTML = '';  // Remove all existing entries
+
+    // Fetch the updated leaderboard data
+    const responseLeaderboard = await fetch('/api/leaderboard');
+    leaderboard = await responseLeaderboard.json();
+
+    for (let i = 0; i < leaderboard.length; i++) {
+      const entry = leaderboard[i];
+      const item = document.createElement('div');
+      item.classList.add('grid-item');
+      item.setAttribute('data-user', entry.username);
+
+      const name = document.createElement('div');
+      name.classList.add('name');
+      name.textContent = entry.username;
+      if (missed_users_once.includes(entry.username)) {
+        name.classList.add('highlight');  // Add the highlight class if the user is one check-in behind
+      }
+      if (missed_users_twice.includes(entry.username)) {
+        item.classList.add('missed');  // Add the missed class if the user is two check-ins behind
+      }
+      item.appendChild(name);
+
+
+      const details = document.createElement('div');
+      details.classList.add('details');
+      details.textContent = `${entry.emoji} ${entry.count}/${entry.total}`;
+      item.appendChild(details);
+
+      container.appendChild(item);
+    }
+  });
+  socket.on('checkin_available', (data) => {
+    console.log('new checkin available.')
+    // Play a sound
+    var audio = new Audio('https://cdn.glitch.global/438c4c60-7b2c-49a9-ade1-54fa350556d6/ping.mp3?v=1688248400957');
+    audio.play();
+  });
+  
+  socket.on('new_checkin', async (user) => {
+    const colors = [
+      "#f5f6fa",
+      "#ddbbff",
+      "#33cc99",
+      "#cc4499",
+      "#4455ff",
+      "#ffcc33",
+      "#9944ff",
+      "#ff7700",
+      "#cc88ff",
+      "#dd4444",
+      "#ffaa90",
+      "#ffbbaa",
+      "#ffcc66",
+      "#7788ff",
+      "#666688",
+      "#aaaaff",
+      "#88ccff",
+      "#ffaa00",
+      "#ff2200",
+      "#ff8866",
+      "#ff9966",
+      "#ff5555",
+      "#cc33ff"
+    ];
+    // Fetch the updated leaderboard and checkins data
+    const responseLeaderboard = await fetch('/api/leaderboard');
+    leaderboard = await responseLeaderboard.json();
+
+    const responseCheckins = await fetch('/api/checkins');
+    const all_checkins = await responseCheckins.json();
+
+    const responseTotalCheckins = await fetch('/api/total_checkins');
+    const total_checkins = await responseTotalCheckins.json();
+
+    const checkins = Object.values(all_checkins);
+    const missed_checkins_once = checkins.filter(checkin => total_checkins - checkin.count === 1);
+    const missed_checkins_twice = checkins.filter(checkin => total_checkins - checkin.count >= 2);
+    const missed_users_once = missed_checkins_once.map(checkin => Object.keys(all_checkins).find(key => all_checkins[key] === checkin));
+    const missed_users_twice = missed_checkins_twice.map(checkin => Object.keys(all_checkins).find(key => all_checkins[key] === checkin));
+
+    // Find the user in the leaderboard
+    let userElement = document.querySelector(`.grid-item[data-user="${user.username}"]`);
+    
+    // If the user doesn't have an element yet, create one
+    if (!userElement) {
+        userElement = document.createElement('div');
+        userElement.classList.add('grid-item');
+        userElement.setAttribute('data-user', user.username);
+
+        // Create a new name element
+        const nameElement = document.createElement('div');
+        nameElement.classList.add('name');
+        userElement.appendChild(nameElement);
+
+        // Create a new details element
+        const detailsElement = document.createElement('div');
+        detailsElement.classList.add('details');
+        userElement.appendChild(detailsElement);
+
+        const container = document.querySelector('.grid-container');
+        container.appendChild(userElement);
+    }
+
+
+    // Generate a random index into the colors array
+    const colorIndex = Math.floor(Math.random() * colors.length);
+    // Set the background color of the item
+    userElement.style.background = colors[colorIndex];
+    // Update the user's check-in count
+    const detailsElement = userElement.querySelector('.details');
+    detailsElement.textContent = `${user.emoji} ${user.count}/${total_checkins}`;
+
+    // Update the user's missed status
+    const nameElement = userElement.querySelector('.name');
+    if (missed_users_once.includes(user.username)) {
+      nameElement.classList.add('highlight');
+    } else {
+      nameElement.classList.remove('highlight');
+    }
+
+    if (missed_users_twice.includes(user.username)) {
+      userElement.classList.add('missed');
+    } else {
+      userElement.classList.remove('missed');
+    }
+  });
+
+
+};              
+</script>
+
+</html>
