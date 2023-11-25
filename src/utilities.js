@@ -22,4 +22,4 @@ function rand(min, max) {
     return timeString;
   }
 
-  module.exports = { rand, formatTime };
+  export { rand, formatTime };
