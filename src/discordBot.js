@@ -1,6 +1,7 @@
 import { abbadabbabotSay, sendMessageToChannel } from "./openAI.js";
 import { settings_db, sched_db } from "./database.js";
 import Discord from "discord.js";
+import { formatTime } from "./utilities.js";
 
 const client = new Discord.Client({
   intents: [

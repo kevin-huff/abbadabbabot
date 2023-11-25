@@ -6,7 +6,6 @@ import path from "path";
 import { fileURLToPath } from 'url';
 import { Server as SocketIOServer } from "socket.io";
 import { abbadabbabotSay, sendMessageToChannel } from "./openAI.js";
-import { formatTime } from "./utils.js";
 
 const app = express();
 
