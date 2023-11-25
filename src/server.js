@@ -1,13 +1,14 @@
 import { settings_db, sched_db } from "./database.js";
 import express from "express";
-import bodyParser from "body-parser";
 import basicAuth from "express-basic-auth";
 import http from "http";
 import path from "path";
 import { fileURLToPath } from 'url';
 import { Server as SocketIOServer } from "socket.io";
+import { abbadabbabotSay, sendMessageToChannel } from "./openAI.js";
 
 const app = express();
+
 const port = 3000;
 const server = http.createServer(app);
 const io = new SocketIOServer(server);
@@ -16,14 +17,9 @@ const io = new SocketIOServer(server);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 var dir = path.join(__dirname, "public");
 
-app.use(
-  express.static(dir, {
-    maxAge: "1d",
-  })
-);
-
-// Ensure the path is correctly constructed using path.join
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.resolve(__dirname, 'public')));
+// Middleware to parse JSON bodies
+app.use(express.json());
 app.set("view engine", "ejs");
 
 
@@ -62,7 +58,6 @@ app.get(
 
 // POST endpoint to add a new schedule
 app.post("/api/schedule", async (req, res) => {
-  console.log("req", req);
   const { dateTime, prompt } = req.body;
   const timestamp = new Date(dateTime).getTime();
   const generatedResponse = await abbadabbabotSay(prompt, "", "");
