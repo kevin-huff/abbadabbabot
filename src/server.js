@@ -62,6 +62,7 @@ app.get(
 
 // POST endpoint to add a new schedule
 app.post("/api/schedule", async (req, res) => {
+  console.log("req", req);
   const { dateTime, prompt } = req.body;
   const timestamp = new Date(dateTime).getTime();
   const generatedResponse = await abbadabbabotSay(prompt, "", "");
