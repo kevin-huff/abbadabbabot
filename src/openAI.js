@@ -51,14 +51,19 @@ async function abbadabbabotSay(msg, prefix = "", postfix = "") {
     if (response) {
       const censored_response = response.response.trim();
 
+      // Split the message and send each part
+      const messageParts = splitMessage(prefix + censored_response + postfix);
+
       if (typeof msg === "object" && msg.hasOwnProperty("author")) {
         console.log("discord message");
         // msg is a Discord message
-        msg.reply(prefix + censored_response + postfix);
+        for (const part of messageParts) {
+          msg.reply(part);
+        }
       } else {
         console.log("string message");
         // msg is a string, return the response directly
-        return censored_response;
+        return messageParts.join('\n');
       }
     } else {
       return "abbadabbabot offline";
@@ -90,8 +95,11 @@ async function sendMessageToChannel(
 
       if (typeof targetChannel !== "undefined") {
         console.log("discord message");
-        // Send the message to the specified channel
-        targetChannel.send(prefix + censored_response + postfix);
+        // Split the message and send each part
+        const messageParts = splitMessage(prefix + censored_response + postfix);
+        for (const part of messageParts) {
+          targetChannel.send(part);
+        }
       }
     } else {
       return "abbadabbabot offline";
@@ -111,5 +119,21 @@ async function sendMessageToChannel(
     }
   }
 }
+
+function splitMessage(message, maxLength = 2000) {
+  const chunks = [];
+  while (message.length > maxLength) {
+    let chunk = message.slice(0, maxLength);
+    let lastSpaceIndex = chunk.lastIndexOf(' ');
+    if (lastSpaceIndex > 0 && lastSpaceIndex < maxLength - 1) {
+      chunk = chunk.slice(0, lastSpaceIndex);
+    }
+    chunks.push(chunk);
+    message = message.slice(chunk.length);
+  }
+  chunks.push(message); // Add remaining part of the message
+  return chunks;
+}
+
 
 export { abbadabbabotSay, sendMessageToChannel };
