@@ -5,6 +5,8 @@ import { BufferWindowMemory  } from "langchain/memory";
 
 const chat = new ChatOpenAI({
   temperature: 1.25,
+  frequencyPenalty: 1.5,
+  presencePenalty: 1.5,
   maxTokens: 2000,
   user: "discord",
   modelName: "gpt-4-1106-preview",
