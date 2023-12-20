@@ -4,7 +4,7 @@ import { ChatPromptTemplate, MessagesPlaceholder } from "langchain/prompts";
 import { BufferWindowMemory  } from "langchain/memory";
 
 const chat = new ChatOpenAI({
-  temperature: 1.25,
+  temperature: 1.1,
   frequencyPenalty: 1.5,
   presencePenalty: 1.5,
   maxTokens: 2000,
