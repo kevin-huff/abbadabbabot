@@ -100,8 +100,8 @@ client.on("messageCreate", async (msg) => {
         } else {
           console.log("no schedule");
           // No upcoming schedule
-          //const prompt = `Make up a bizarre reason why abbabox hasn't done the schedule yet. Make sure to remind chat to go easy on abba for not getting the schedule done yet.`;
-          const prompt = `Give @${msg.author.username} a verbal spanking for requesting the schedule during NO SCHED DECEMBER!`;
+          const prompt = `Make up a bizarre reason why abbabox hasn't done the schedule yet. Make sure to remind chat to go easy on abba for not getting the schedule done yet.`;
+          //const prompt = `Give @${msg.author.username} a verbal spanking for requesting the schedule during NO SCHED DECEMBER!`;
 
           msg.content = prompt;
           await abbadabbabotSay(msg, "", `- NO SCHED DEC.`);
