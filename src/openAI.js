@@ -2,7 +2,9 @@ import { ConversationChain } from "langchain/chains";
 import { ChatOpenAI } from "langchain/chat_models/openai";
 import { ChatPromptTemplate, MessagesPlaceholder } from "langchain/prompts";
 import { BufferWindowMemory  } from "langchain/memory";
+import { chat_memory_db } from "./database.js";
 
+const memory_limit = 15;
 const chat = new ChatOpenAI({
   temperature: 1,
   frequencyPenalty: 1.5,
@@ -19,9 +21,40 @@ const chatPrompt = ChatPromptTemplate.fromMessages([
   new MessagesPlaceholder("history"),
   ["human", "{input}"],
 ]);
+const botMemory = new BufferWindowMemory({ returnMessages: true, memoryKey: "history", k: memory_limit });
+
+// See if the chat_memory_db has any messages in it
+var chat_memory_db_obj = chat_memory_db.all();
+// If it has anything in it then put it in the memory
+if (Object.keys(chat_memory_db_obj).length !== 0) {
+  console.log("chat_memory_db_obj:", chat_memory_db_obj);
+  //Select the first memory limit number of inputValues
+  chat_memory_db_obj.input = chat_memory_db_obj.input.slice(-memory_limit);
+  chat_memory_db_obj.output = chat_memory_db_obj.output.slice(-memory_limit);
+  //Make sure they are teh same length
+  if (chat_memory_db_obj.input.length !== chat_memory_db_obj.output.length) {
+    console.log("chat_memory_db_obj.input.length !== chat_memory_db_obj.output.length");
+    //If they are not the same length then make them the same length
+    if (chat_memory_db_obj.input.length > chat_memory_db_obj.output.length) {
+      console.log("chat_memory_db_obj.input.length > chat_memory_db_obj.output.length");
+      //If the input is longer than the output then remove the last element of the input
+      chat_memory_db_obj.input.pop();
+    } else {
+      console.log("chat_memory_db_obj.input.length < chat_memory_db_obj.output.length");
+      //If the output is longer than the input then remove the last element of the output
+      chat_memory_db_obj.output.pop();
+    }
+  }
+  //Loop over the input and output and save each one to the context
+  for (var i = 0; i < chat_memory_db_obj.input.length; i++) {
+    console.log("chat_memory_db_obj.input[i]:", chat_memory_db_obj.input[i]);
+    console.log("chat_memory_db_obj.output[i]:", chat_memory_db_obj.output[i])
+    await botMemory.saveContext({"input": chat_memory_db_obj.input[i]}, {"output": chat_memory_db_obj.output[i]});
+  }
+}
 
 const chain = new ConversationChain({
-  memory: new BufferWindowMemory({ returnMessages: true, memoryKey: "history", k: 15 }),
+  memory: botMemory,
   prompt: chatPrompt,
   llm: chat,
 });
@@ -49,6 +82,9 @@ async function abbadabbabotSay(msg, prefix = "", postfix = "") {
     });
     console.log("response:", response);
     if (response) {
+      //Save the history to the chat_memory_db
+      await chat_memory_db.push('output', response.response.trim());
+      await chat_memory_db.push('input', messageContent);
       const censored_response = response.response.trim();
 
       // Split the message and send each part
