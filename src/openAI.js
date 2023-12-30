@@ -27,20 +27,20 @@ const botMemory = new BufferWindowMemory({ returnMessages: true, memoryKey: "his
 var chat_memory_db_obj = chat_memory_db.all();
 // If it has anything in it then put it in the memory
 if (Object.keys(chat_memory_db_obj).length !== 0) {
-  console.log("chat_memory_db_obj:", chat_memory_db_obj);
+  //console.log("chat_memory_db_obj:", chat_memory_db_obj);
   //Select the first memory limit number of inputValues
   chat_memory_db_obj.input = chat_memory_db_obj.input.slice(-memory_limit);
   chat_memory_db_obj.output = chat_memory_db_obj.output.slice(-memory_limit);
   //Make sure they are teh same length
   if (chat_memory_db_obj.input.length !== chat_memory_db_obj.output.length) {
-    console.log("chat_memory_db_obj.input.length !== chat_memory_db_obj.output.length");
+    //console.log("chat_memory_db_obj.input.length !== chat_memory_db_obj.output.length");
     //If they are not the same length then make them the same length
     if (chat_memory_db_obj.input.length > chat_memory_db_obj.output.length) {
-      console.log("chat_memory_db_obj.input.length > chat_memory_db_obj.output.length");
+      //console.log("chat_memory_db_obj.input.length > chat_memory_db_obj.output.length");
       //If the input is longer than the output then remove the last element of the input
       chat_memory_db_obj.input.pop();
     } else {
-      console.log("chat_memory_db_obj.input.length < chat_memory_db_obj.output.length");
+      //console.log("chat_memory_db_obj.input.length < chat_memory_db_obj.output.length");
       //If the output is longer than the input then remove the last element of the output
       chat_memory_db_obj.output.pop();
     }
@@ -48,9 +48,10 @@ if (Object.keys(chat_memory_db_obj).length !== 0) {
   //Loop over the input and output and save each one to the context
   for (var i = 0; i < chat_memory_db_obj.input.length; i++) {
     console.log("chat_memory_db_obj.input[i]:", chat_memory_db_obj.input[i]);
-    console.log("chat_memory_db_obj.output[i]:", chat_memory_db_obj.output[i])
+    console.log("chat_memory_db_obj.output[i]:", chat_memory_db_obj.output[i]);
     await botMemory.saveContext({"input": chat_memory_db_obj.input[i]}, {"output": chat_memory_db_obj.output[i]});
   }
+  console.log("------------------");
 }
 
 const chain = new ConversationChain({
@@ -74,13 +75,14 @@ async function abbadabbabotSay(msg, prefix = "", postfix = "") {
   } else {
     return "Invalid message type";
   }
-
+  console.log("messageContent:", messageContent);
   try {
     console.log("About to make API call...");
     const response = await chain.call({
       input: messageContent,
     });
-    console.log("response:", response);
+    console.log("response:", response.response);
+    console.log('---------------------------------');
     if (response) {
       //Save the history to the chat_memory_db
       await chat_memory_db.push('output', response.response.trim());
@@ -91,7 +93,7 @@ async function abbadabbabotSay(msg, prefix = "", postfix = "") {
       const messageParts = splitMessage(prefix + censored_response + postfix);
 
       if (typeof msg === "object" && msg.hasOwnProperty("author")) {
-        console.log("discord message");
+        //console.log("discord message");
         // msg is a Discord message
         for (const part of messageParts) {
           msg.reply(part);
