@@ -1,36 +1,74 @@
 Abbadabbabot v3.2-b
 ===================
 
-This is a Discord bot called Abbadabbabot v3.2-b. It uses the OpenAI GPT-4 model to generate responses, while implementing additional functionality such as censoring specific words and handling various Discord events.
+Abbadabbabot is a Discord bot that leverages the power of OpenAI's GPT-4 model to generate contextually relevant (and fun) responses. It also offers additional features such as word censoring, event handling, and more.
 
 Features
---------
+-
 
--   Uses OpenAI GPT-4 model to generate responses in the context of a foul-mouthed AI character
--   Censors specific words or phrases using the CensorSensor library
--   Keeps track of the number of "deeze nutz" jokes made in the server
--   Manages stream schedules and provides countdowns for upcoming streams
--   Sends notifications when users join or leave voice channels
+- Utilizes the OpenAI GPT-4 model to generate responses, embodying a unique AI character.
+- Utilizes Langchain framework for conversationsal LLM & persistent conversation memory
+- Employs the CensorSensor library to censor specific words or phrases.
+- Tracks the count of "deeze nutz" jokes made within the server.
+- Manages stream schedules and provides countdowns for upcoming streams.
+- Sends notifications when users join or leave voice channels.
+
+Prerequisites
+-
+- A discord bot account
+- OpenAI API key
+- Node.js (or docker)
+
+
 
 Installation
-------------
-
+-
+### Node.js
 1.  Make sure you have Node.js installed on your system.
 2.  Clone this repository and navigate to the project folder.
 3.  Run `npm install` to install the required dependencies.
-4.  Create a `.env` file in the project root and add the following environment variables:
+4. Populate the `.env` file with your environment variables.
+5. Add in your environment variables.
+6. Run `node index.js` to start the bot.
+### Docker
+This repository contains a Docker file for Abbadabbabot, to make it easy to host your own. Simply use `docker build -t your-app-name .` and then run the container using the environement variables below.
 
-makefileCopy code
 
-`OPENAI_API_KEY=your_openai_api_key
-DISCORD_TOKEN=your_discord_bot_token`
+#### Environment Variables
+The Docker image uses the following environment variables:
 
-1.  Run `node index.js` to start the bot.
+* `DISCORD_TOKEN`: Your Discord bot token.
+* `OPENAI_API_KEY`: Your OpenAI API key.
+* `DISCORD_OAUTH`: Discord OAuth token.
+* `CHECKIN_CHANNEL`: The ID of the Discord channel for check-ins.
+* `CHANNEL_TO_IGNORE`: The ID of the Discord channel to ignore.
+* `SECONDARY_NOTIFICATION_ONLY`: Set to true to enable secondary notifications only.
+* `NOTIFICATION_CHANNEL`: The ID of the Discord channel for notifications.
+* `SECONDARY_NOTIFICATION_CHANNEL`: The ID of the Discord channel for secondary notifications.
+* `USERS_TO_IGNORE`: Users to not alert about voice status changes
+* `sched_user`: username to user for login of the schedule creator
+* `sched_pass`: password for login of the schedule creator
+
+You can set these environment variables when you run the Docker image using the -e option with docker run:
+
+```docker run -e DISCORD_TOKEN=your-token -e OPENAI_API_KEY=your-key ...```
+
+Replace `your-token`, `your-key`, etc. with your actual Discord token, OpenAI API key, etc.
+
+#### Persistent Storage
+The Docker image uses a volume for the `/usr/src/app/db` directory to persist the database. You can create this volume when you run the Docker image using the `-v` option with `docker run`:
+
+```docker run -v /path/on/host:/usr/src/app/db ...```
+
+Replace `/path/on/host` with the path to the directory on your host machine that you want to use for the volume. Any data that the Docker container writes to the `/usr/src/app/db` directory will be stored in this directory on the host machine, and will persist even if the Docker container is stopped or deleted.
+
+#### Building and Running the Docker Image
+You can build and run the Docker image using Docker. See the Docker documentation for more information on how to use Docker.
 
 Usage
 -----
 
-Send messages in your Discord server with specific keywords or commands to interact with Abbadabbabot. The bot will generate responses based on the context and send them as replies.
+Interact with Abbadabbabot by sending messages with specific keywords or commands in your Discord server. The bot will generate contextually relevant responses and send them as replies.
 
 Here are some example commands:
 
@@ -45,4 +83,4 @@ The bot also sends notifications when users join or leave voice channels, exclud
 Customization
 -------------
 
-You can customize the behavior of the bot by modifying the code in `index.js`. For example, you can add or remove words to censor, change the Discord events that the bot listens to, or adjust the GPT-4 model parameters.
+Big things you'd want to update are in the openAI settings in `src/openAI.js` such as the `systemPrompt` or the `memory_limit`

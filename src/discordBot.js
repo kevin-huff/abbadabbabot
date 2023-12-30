@@ -104,7 +104,7 @@ client.on("messageCreate", async (msg) => {
           //const prompt = `Give @${msg.author.username} a verbal spanking for requesting the schedule during NO SCHED DECEMBER!`;
 
           msg.content = prompt;
-          await abbadabbabotSay(msg, "", `- NO SCHED DEC.`);
+          await abbadabbabotSay(msg, "", `- NO SCHED YET.`);
         }
         break;
 
