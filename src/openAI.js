@@ -90,6 +90,7 @@ async function abbadabbabotSay(msg, prefix = "", postfix = "") {
       const censored_response = response.response.trim();
       // Make sure the bot doesn't @everyone or @here
       if (censored_response.includes("@everyone")) {
+        console.log('censored_response.includes("@everyone")');
         censored_response.replace("@everyone", "@ everyone");
       }
       if (censored_response.includes("@here")) {
