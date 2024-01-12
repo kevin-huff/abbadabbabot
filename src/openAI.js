@@ -88,6 +88,8 @@ async function abbadabbabotSay(msg, prefix = "", postfix = "") {
       await chat_memory_db.push('output', response.response.trim());
       await chat_memory_db.push('input', messageContent);
       let censored_response = response.response.trim();
+      // Put a space after the any @ symbol just to be safe.
+      censored_response = censored_response.replace("@", "@ ");
       // Make sure the bot doesn't @everyone or @here
       if (censored_response.includes("@everyone")) {
         console.log('censored_response.includes("@everyone")');
@@ -96,6 +98,7 @@ async function abbadabbabotSay(msg, prefix = "", postfix = "") {
       if (censored_response.includes("@here")) {
         censored_response = censored_response.replace("@here", "@ here");
       }
+
       // Split the message and send each part
       const messageParts = splitMessage(prefix + censored_response + postfix);
 
