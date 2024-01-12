@@ -91,10 +91,10 @@ async function abbadabbabotSay(msg, prefix = "", postfix = "") {
       // Make sure the bot doesn't @everyone or @here
       if (censored_response.includes("@everyone")) {
         console.log('censored_response.includes("@everyone")');
-        censored_response.replace("@everyone", "@ everyone");
+        censored_response = censored_response.replace("@everyone", "@ everyone");
       }
       if (censored_response.includes("@here")) {
-        censored_response.replace("@here", "@ here");
+        censored_response = censored_response.replace("@here", "@ here");
       }
       // Split the message and send each part
       const messageParts = splitMessage(prefix + censored_response + postfix);
