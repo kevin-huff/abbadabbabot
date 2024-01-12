@@ -87,7 +87,7 @@ async function abbadabbabotSay(msg, prefix = "", postfix = "") {
       //Save the history to the chat_memory_db
       await chat_memory_db.push('output', response.response.trim());
       await chat_memory_db.push('input', messageContent);
-      const censored_response = response.response.trim();
+      let censored_response = response.response.trim();
       // Make sure the bot doesn't @everyone or @here
       if (censored_response.includes("@everyone")) {
         console.log('censored_response.includes("@everyone")');
