@@ -6,10 +6,10 @@ import { chat_memory_db } from "./database.js";
 
 const memory_limit = 20;
 const chat = new ChatOpenAI({
-  temperature: 1.14,
+  temperature: 0.95,
   frequencyPenalty: 1.5,
   presencePenalty: 1.5,
-  maxTokens: 1000,
+  maxTokens: 700,
   user: "discord",
   modelName: "gpt-4-0125-preview",
 });
