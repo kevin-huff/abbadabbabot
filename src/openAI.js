@@ -6,7 +6,7 @@ import { chat_memory_db } from "./database.js";
 
 const memory_limit = 20;
 const chat = new ChatOpenAI({
-  temperature: 0.95,
+  temperature: 0.5,
   frequencyPenalty: 1.5,
   presencePenalty: 1.5,
   maxTokens: 700,
