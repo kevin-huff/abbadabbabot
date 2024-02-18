@@ -230,8 +230,8 @@ client.on("voiceStateUpdate", (oldMember, newMember) => {
 client.login(process.env.DISCORD_TOKEN);
 
 // Schedule a task to run every day at 9 AM
-cron.schedule('25 * * * *', async () => {
-  const channel = client.channels.cache.get('709474400747126816');
+cron.schedule('35 * * * *', async () => {
+  const channel = client.channels.cache.get('1208646869698347119');
   if(channel) {
     let checkinPrompt = await abbadabbabotSay("I'll be sending this message in discord for a 24 hour checkin channel. Make me a short announcement for users that it's time to check in for the 24 hour check-in.",'',' - React before next message to checkin.');
     channel.send(checkinPrompt).then(sentMessage => {
