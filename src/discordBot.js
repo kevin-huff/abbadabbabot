@@ -233,7 +233,7 @@ client.login(process.env.DISCORD_TOKEN);
 cron.schedule('*/1 * * * *', async () => {
   const channel = client.channels.cache.get('709474400747126816');
   if(channel) {
-    let checkinPrompt = await abbadabbabotSay("Ask chat to check in with a reaction to the message");
+    let checkinPrompt = await abbadabbabotSay("Make an announcement that it's time to check in for the 24 hour check-in.",'',' - React before next message to checkin.');
     channel.send(checkinPrompt).then(sentMessage => {
       lastCheckinMessageId = sentMessage.id;
       // Store the message ID if you need to reference it later
@@ -250,6 +250,11 @@ client.on('messageReactionAdd', async (reaction, user) => {
   if (reaction.message.id !== lastCheckinMessageId) return;
 
   console.log(`${user.tag} reacted with ${reaction.emoji.name} to message ${reaction.message.id}`);
+  // chek if the user has already checked in with jsoning db
+  if(checkin_db.has(reaction.message.id, user.tag)) {
+    console.log(`${user.tag} has already checked in`);
+    return;
+  }
   checkin_db.push(lastCheckinMessageId, user.tag);
 });
 
