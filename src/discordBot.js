@@ -230,11 +230,11 @@ client.on("voiceStateUpdate", (oldMember, newMember) => {
 client.login(process.env.DISCORD_TOKEN);
 
 // Schedule a task to run every day at 9 AM
-cron.schedule('*/1 * * * *', () => {
+cron.schedule('*/1 * * * *', async () => {
   const channel = client.channels.cache.get('709474400747126816');
   if(channel) {
-    let checkinPrompt = abbadabbabotSay("Ask chat to check in with a reaction to the message");
-    channel.send('checkinPrompt').then(sentMessage => {
+    let checkinPrompt = await abbadabbabotSay("Ask chat to check in with a reaction to the message");
+    channel.send(checkinPrompt).then(sentMessage => {
       lastCheckinMessageId = sentMessage.id;
       // Store the message ID if you need to reference it later
       console.log(`Check-in message sent with ID: ${sentMessage.id}`);
