@@ -115,6 +115,30 @@ client.on("messageCreate", async (msg) => {
         var dn_count = settings_db.get("deeze_nutz");
         msg.content = `There has been ${dn_count} deeze nutz jokes recorded in this discord.`;
         abbadabbabotSay(msg, "", `- ${dn_count} deeze nutz since 8/14/22`);
+        break;
+        case /^!checkins.*/i.test(msg.content.toLowerCase()):
+          const checkins = checkin_db.all();
+          // See if msg.author.username is in the checkins object
+          if(checkins) {
+            // Loop over see if the user is in every one message
+            var in_all_checkins = true;
+            for (const checkinId in checkins) {
+              const checkin = checkins[checkinId];
+              if (!checkin.includes(msg.author.username)) {
+                in_all_checkins = false;
+                break; // If user is not found in a checkin, no need to continue the loop
+              }
+            }
+            if (in_all_checkins) {
+              abbadabbabotSay(msg, "", "You checked in every time.");
+            } else {
+              abbadabbabotSay(msg, "", "You haven't checked in each time.");
+            }
+          }
+          const totalCheckins = Object.values(checkins).reduce((total, usernames) => total + usernames.length, 0);
+          msg.content = `The last checkin message has ${totalCheckins} checkins.`;
+          abbadabbabotSay(msg, "", `- ${totalCheckins} checkins`);
+          break;
     }
   }
 });
@@ -230,7 +254,7 @@ client.on("voiceStateUpdate", (oldMember, newMember) => {
 client.login(process.env.DISCORD_TOKEN);
 
 // Schedule a task to run every day at 9 AM
-cron.schedule('35 * * * *', async () => {
+cron.schedule('58 * * * *', async () => {
   const channel = client.channels.cache.get('1208646869698347119');
   if(channel) {
     let checkinPrompt = await abbadabbabotSay("I'll be sending this message in discord for a 24 hour checkin channel. Make me a short announcement for users that it's time to check in for the 24 hour check-in.",'',' - React before next message to checkin.');
@@ -250,6 +274,18 @@ client.on('messageReactionAdd', async (reaction, user) => {
   if (reaction.message.id !== lastCheckinMessageId) return;
 
   console.log(`${user.tag} reacted with ${reaction.emoji.name} to message ${reaction.message.id}`);
+  // Get the checkins
+  let last_checkins = checkin_db.get(lastCheckinMessageId);
+  // See if this user is in the last checkins array
+
+  var in_checkin = last_checkins.findIndex(function (last_checkin, index) {
+    if (last_checkin.username == tags.username) return true;
+  });
+
+  if (in_checkin) {
+    console.log(`${user.tag} has already checked in`);
+    return;
+  }
   // chek if the user has already checked in with jsoning db
   if(checkin_db.has(reaction.message.id, user.tag)) {
     console.log(`${user.tag} has already checked in`);
