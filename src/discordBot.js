@@ -4,7 +4,7 @@ import Discord from "discord.js";
 import { formatTime } from "./utilities.js";
 import cron from 'node-cron';
 
-let lastCheckinMessageId = "1208665488368992326";
+let lastCheckinMessageId = "1208710768623886416";
 const client = new Discord.Client({
   intents: [
     "GUILDS",
@@ -130,10 +130,10 @@ client.on("messageCreate", async (msg) => {
               }
             }
             if (in_all_checkins) {
-              msg.content = `Let ${msg.author.username} know they've  hecked in every time. In just a sentence or less.`;
+              msg.content = `please help me craft a discord message for ${msg.author.username} letting them know they've checked in every time. In just a sentence or less.`;
               abbadabbabotSay(msg, "", `- All Checkins`);
             } else {
-              msg.content = `Let ${msg.author.username} know they've missed a checkin and have lost the game. In just a sentence or less.`
+              msg.content = `please help me craft a discord message for ${msg.author.username} letting them know they've missed a checkin and have lost the game. In just a sentence or less.`
               abbadabbabotSay(msg, "", `- Missed Checkins 😭`);
             }
           }
@@ -256,7 +256,7 @@ client.login(process.env.DISCORD_TOKEN);
 cron.schedule('45 * * * *', async () => {
   const channel = client.channels.cache.get('1208646869698347119');
   if(channel) {
-    let checkinPrompt = await abbadabbabotSay("I'll be sending this message in discord for a 24 hour checkin channel. Make me a short announcement for users that it's time to check in for the 24 hour check-in.",'',' - React before next message to checkin.');
+    let checkinPrompt = await abbadabbabotSay("Help me generate a discord message that I'll be sending in a 24 hour checkin channel: Make me a short announcement for users that it's time to check in for the 24 hour check-in.",'',' - React before next message to checkin.');
     channel.send(checkinPrompt).then(sentMessage => {
       lastCheckinMessageId = sentMessage.id;
       // Store the message ID if you need to reference it later
