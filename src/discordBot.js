@@ -230,10 +230,10 @@ client.on("voiceStateUpdate", (oldMember, newMember) => {
 client.login(process.env.DISCORD_TOKEN);
 
 // Schedule a task to run every day at 9 AM
-cron.schedule('*/1 * * * *', async () => {
+cron.schedule('25 * * * *', async () => {
   const channel = client.channels.cache.get('709474400747126816');
   if(channel) {
-    let checkinPrompt = await abbadabbabotSay("Make an announcement that it's time to check in for the 24 hour check-in.",'',' - React before next message to checkin.');
+    let checkinPrompt = await abbadabbabotSay("I'll be sending this message in discord for a 24 hour checkin channel. Make me a short announcement for users that it's time to check in for the 24 hour check-in.",'',' - React before next message to checkin.');
     channel.send(checkinPrompt).then(sentMessage => {
       lastCheckinMessageId = sentMessage.id;
       // Store the message ID if you need to reference it later
