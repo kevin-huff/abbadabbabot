@@ -130,11 +130,11 @@ client.on("messageCreate", async (msg) => {
               }
             }
             if (in_all_checkins) {
-              let msg = `Let ${msg.author.username} know they've  hecked in every time. In just a sentence or less.`;
-              abbadabbabotSay(msg, "", `- All Checkins`);
+              let response = `Let ${msg.author.username} know they've  hecked in every time. In just a sentence or less.`;
+              abbadabbabotSay(response, "", `- All Checkins`);
             } else {
-              let msg = `Let ${msg.author.username} know they've missed a checkin and have lost the game. In just a sentence or less.`
-              abbadabbabotSay(msg, "", `- Missed Checkins 😭`);
+              let response = `Let ${msg.author.username} know they've missed a checkin and have lost the game. In just a sentence or less.`
+              abbadabbabotSay(response, "", `- Missed Checkins 😭`);
             }
           }
           break;
