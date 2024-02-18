@@ -4,7 +4,7 @@ import Discord from "discord.js";
 import { formatTime } from "./utilities.js";
 import cron from 'node-cron';
 
-let lastCheckinMessageId = null;
+let lastCheckinMessageId = "1208665488368992326";
 const client = new Discord.Client({
   intents: [
     "GUILDS",
