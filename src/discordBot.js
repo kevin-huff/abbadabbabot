@@ -229,7 +229,7 @@ client.on("voiceStateUpdate", (oldMember, newMember) => {
 client.login(process.env.DISCORD_TOKEN);
 
 // Schedule a task to run every day at 9 AM
-cron.schedule('1/5 * * * *', () => {
+cron.schedule('42 * * * *', () => {
   const channel = client.channels.cache.get('709474400747126816');
   if(channel) {
     channel.send('Check-in message: How is everyone today? React to this message!').then(sentMessage => {
