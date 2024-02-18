@@ -254,7 +254,7 @@ client.on("voiceStateUpdate", (oldMember, newMember) => {
 client.login(process.env.DISCORD_TOKEN);
 
 // Schedule a task to run every day at 9 AM
-cron.schedule('58 * * * *', async () => {
+cron.schedule('45 * * * *', async () => {
   const channel = client.channels.cache.get('1208646869698347119');
   if(channel) {
     let checkinPrompt = await abbadabbabotSay("I'll be sending this message in discord for a 24 hour checkin channel. Make me a short announcement for users that it's time to check in for the 24 hour check-in.",'',' - React before next message to checkin.');
@@ -276,20 +276,18 @@ client.on('messageReactionAdd', async (reaction, user) => {
   console.log(`${user.tag} reacted with ${reaction.emoji.name} to message ${reaction.message.id}`);
   // Get the checkins
   let last_checkins = checkin_db.get(lastCheckinMessageId);
+  console.log('last_checkins', last_checkins)
   // See if this user is in the last checkins array
+  if (last_checkins && last_checkins.length > 0) {
 
-  var in_checkin = last_checkins.findIndex(function (last_checkin, index) {
-    if (last_checkin.username == tags.username) return true;
-  });
+    let in_checkin = last_checkins.findIndex(function (last_checkin, index) {   
+      if (last_checkin == user.tag) return true;
+    });
 
-  if (in_checkin) {
-    console.log(`${user.tag} has already checked in`);
-    return;
-  }
-  // chek if the user has already checked in with jsoning db
-  if(checkin_db.has(reaction.message.id, user.tag)) {
-    console.log(`${user.tag} has already checked in`);
-    return;
+    if (in_checkin !== -1) {
+      console.log(`${user.tag} has already checked in`);
+      return;
+    }
   }
   checkin_db.push(lastCheckinMessageId, user.tag);
 });
