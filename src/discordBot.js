@@ -138,6 +138,35 @@ client.on("messageCreate", async (msg) => {
             }
           }
           break;
+          case /^!survivors.*/i.test(msg.content.toLowerCase()):
+        const allCheckins = checkin_db.all();
+        const usersInAllCheckins = {};
+
+        // Initialize usersInAllCheckins with the users in the first checkin
+        for (const user of allCheckins[Object.keys(allCheckins)[0]]) {
+          usersInAllCheckins[user] = true;
+        }
+
+        // Loop over the rest of the checkins
+        for (const messageId in allCheckins) {
+          const checkin = allCheckins[messageId];
+
+          // Loop over the users in usersInAllCheckins
+          for (const user in usersInAllCheckins) {
+            // If the user is not in the current checkin, remove them from usersInAllCheckins
+            if (!checkin.includes(user)) {
+              delete usersInAllCheckins[user];
+            }
+          }
+        }
+
+        // Convert the usersInAllCheckins object to an array
+        const usersArray = Object.keys(usersInAllCheckins);
+
+        // Send a message with the list of users
+        msg.content = `The following users have a checkin for every messageId: ${usersArray.join(', ')}`;
+        abbadabbabotSay(msg, "", `- Survivors are: ${usersArray.join(', ')}`);
+        break;
     }
   }
 });
