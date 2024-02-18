@@ -130,14 +130,11 @@ client.on("messageCreate", async (msg) => {
               }
             }
             if (in_all_checkins) {
-              abbadabbabotSay(msg, "", "You checked in every time.");
+              abbadabbabotSay(msg, "", `Let ${msg.author.username} know they've  hecked in every time. In just a sentence or less.`);
             } else {
-              abbadabbabotSay(msg, "", "You haven't checked in each time.");
+              abbadabbabotSay(msg, "", `Let ${msg.author.username} know they've missed a checkin and have lost the game. In just a sentence or less.`);
             }
           }
-          const totalCheckins = Object.values(checkins).reduce((total, usernames) => total + usernames.length, 0);
-          msg.content = `The last checkin message has ${totalCheckins} checkins.`;
-          abbadabbabotSay(msg, "", `- ${totalCheckins} checkins`);
           break;
     }
   }
