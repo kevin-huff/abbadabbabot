@@ -2,6 +2,7 @@ import { abbadabbabotSay, sendMessageToChannel } from "./openAI.js";
 import { settings_db, sched_db } from "./database.js";
 import Discord from "discord.js";
 import { formatTime } from "./utilities.js";
+import cron from 'node-cron';
 
 const client = new Discord.Client({
   intents: [
@@ -17,6 +18,7 @@ client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
   client.user.setActivity("Abba and Friends", { type: "WATCHING" });
 });
+
 client.on("messageCreate", async (msg) => {
   //ignore self messages
   if (msg.author.username !== "Abbadabbabot v3.2-b") {
@@ -225,5 +227,19 @@ client.on("voiceStateUpdate", (oldMember, newMember) => {
 });
 
 client.login(process.env.DISCORD_TOKEN);
+
+// Schedule a task to run every day at 9 AM
+cron.schedule('1/5 * * * *', () => {
+  const channel = client.channels.cache.get('709474400747126816');
+  if(channel) {
+    channel.send('Check-in message: How is everyone today? React to this message!').then(sentMessage => {
+      // Store the message ID if you need to reference it later
+      console.log(`Check-in message sent with ID: ${sentMessage.id}`);
+    }).catch(console.error);
+  }
+}, {
+  scheduled: true,
+  timezone: "America/Chicago"
+});
 
 export { client };
