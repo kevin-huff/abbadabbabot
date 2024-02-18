@@ -1,9 +1,10 @@
 import { abbadabbabotSay, sendMessageToChannel } from "./openAI.js";
-import { settings_db, sched_db } from "./database.js";
+import { settings_db, sched_db, checkin_db } from "./database.js";
 import Discord from "discord.js";
 import { formatTime } from "./utilities.js";
 import cron from 'node-cron';
 
+let lastCheckinMessageId = null;
 const client = new Discord.Client({
   intents: [
     "GUILDS",
@@ -229,10 +230,12 @@ client.on("voiceStateUpdate", (oldMember, newMember) => {
 client.login(process.env.DISCORD_TOKEN);
 
 // Schedule a task to run every day at 9 AM
-cron.schedule('*/5 * * * *', () => {
+cron.schedule('*/1 * * * *', () => {
   const channel = client.channels.cache.get('709474400747126816');
   if(channel) {
-    channel.send('Check-in message: How is everyone today? React to this message!').then(sentMessage => {
+    let checkinPrompt = abbadabbabotSay("Ask chat to check in with a reaction to the message");
+    channel.send('checkinPrompt').then(sentMessage => {
+      lastCheckinMessageId = sentMessage.id;
       // Store the message ID if you need to reference it later
       console.log(`Check-in message sent with ID: ${sentMessage.id}`);
     }).catch(console.error);
@@ -240,6 +243,14 @@ cron.schedule('*/5 * * * *', () => {
 }, {
   scheduled: true,
   timezone: "America/Chicago"
+});
+
+client.on('messageReactionAdd', async (reaction, user) => {
+  // Check if the reaction is on the check-in message
+  if (reaction.message.id !== lastCheckinMessageId) return;
+
+  console.log(`${user.tag} reacted with ${reaction.emoji.name} to message ${reaction.message.id}`);
+  checkin_db.push(lastCheckinMessageId, user.tag);
 });
 
 export { client };
