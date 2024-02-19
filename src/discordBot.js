@@ -281,7 +281,7 @@ client.on("voiceStateUpdate", (oldMember, newMember) => {
 
 client.login(process.env.DISCORD_TOKEN);
 
-// Schedule a task to run every day at 9 AM
+/*
 cron.schedule('45 * * * *', async () => {
   const channel = client.channels.cache.get('1208646869698347119');
   if(channel) {
@@ -318,6 +318,6 @@ client.on('messageReactionAdd', async (reaction, user) => {
     }
   }
   checkin_db.push(lastCheckinMessageId, user.tag);
-});
+});*/
 
 export { client };
