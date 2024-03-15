@@ -172,7 +172,7 @@
       // Handle form submission
       form.addEventListener('submit', (e) => {
         e.preventDefault();
-        const dateTime = document.getElementById('dateTime').value + " -05:00";
+        const dateTime = document.getElementById('dateTime').value + " -04:00";
         const prompt = document.getElementById('prompt').value;
         toggleSpinner(true);  // Show spinner
         fetch('/api/schedule', {
