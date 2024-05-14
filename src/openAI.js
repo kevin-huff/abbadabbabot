@@ -3,6 +3,7 @@ import { ChatOpenAI } from "langchain/chat_models/openai";
 import { ChatPromptTemplate, MessagesPlaceholder } from "langchain/prompts";
 import { BufferWindowMemory  } from "langchain/memory";
 import { chat_memory_db } from "./database.js";
+import { createReadStream } from 'fs';
 
 const memory_limit = 20;
 const chat = new ChatOpenAI({
@@ -60,64 +61,94 @@ const chain = new ConversationChain({
   llm: chat,
 });
 
+async function processImage(imagePath) {
+  try {
+    const response = await fetch('https://api.openai.com/v1/images', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'dalle-v1', // Update this as per the model you are using
+        image: createReadStream(imagePath)
+      }),
+    });
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error processing image:', error);
+    throw new Error('Image processing failed');
+  }
+}
+
 async function abbadabbabotSay(msg, prefix = "", postfix = "") {
   console.log(systemPrompt);
   let messageContent;
   let username = "Unknown";
+  let response;
 
   // Check if msg is a Discord message object or a string
   if (typeof msg === "object" && msg.hasOwnProperty("author")) {
     username = msg.author.username;
-    messageContent =
-      `${username}: ` + msg.content.toLowerCase().replace("abbadabbabot ", "");
+    if (msg.attachments.size > 0) {
+      const attachment = msg.attachments.first();
+      const imagePath = attachment.url;
+
+      try {
+        console.log("Processing image...");
+        const visionResponse = await processImage(imagePath);
+        response = { response: visionResponse.text };
+      } catch (error) {
+        console.error("Error processing image:", error);
+        msg.reply("Sorry, I couldn't process the image.");
+        return;
+      }
+    } else {
+      messageContent = `${username}: ` + msg.content.toLowerCase().replace("abbadabbabot ", "");
+    }
   } else if (typeof msg === "string") {
     messageContent = msg;
   } else {
     return "Invalid message type";
   }
-  console.log("messageContent:", messageContent);
-  try {
-    console.log("About to make API call...");
-    const response = await chain.call({
-      input: messageContent,
-    });
-    console.log("response:", response.response);
-    console.log('---------------------------------');
-    if (response) {
-      //Save the history to the chat_memory_db
-      await chat_memory_db.push('output', response.response.trim());
-      await chat_memory_db.push('input', messageContent);
-      let censored_response = response.response.trim();
-      // Put a space after the any @ symbol just to be safe.
-      censored_response = censored_response.replace("@", "@ ");
-      // Make sure the bot doesn't @everyone or @here
-      if (censored_response.includes("@everyone")) {
-        console.log('censored_response.includes("@everyone")');
-        censored_response = censored_response.replace("@everyone", "@ everyone");
-      }
-      if (censored_response.includes("@here")) {
-        censored_response = censored_response.replace("@here", "@ here");
-      }
 
-      // Split the message and send each part
-      const messageParts = splitMessage(prefix + censored_response + postfix);
+  if (!response) {
+    try {
+      console.log("About to make API call...");
+      response = await chain.call({
+        input: messageContent,
+      });
+      console.log("response:", response.response);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
-      if (typeof msg === "object" && msg.hasOwnProperty("author")) {
-        //console.log("discord message");
-        // msg is a Discord message
-        for (const part of messageParts) {
-          msg.reply(part);
-        }
-      } else {
-        console.log("string message");
-        // msg is a string, return the response directly
-        return messageParts.join('\n');
+  if (response) {
+    await chat_memory_db.push('output', response.response.trim());
+    await chat_memory_db.push('input', messageContent);
+    let censored_response = response.response.trim();
+    censored_response = censored_response.replace("@", "@ ");
+    if (censored_response.includes("@everyone")) {
+      censored_response = censored_response.replace("@everyone", "@ everyone");
+    }
+    if (censored_response.includes("@here")) {
+      censored_response = censored_response.replace("@here", "@ here");
+    }
+
+    const messageParts = splitMessage(prefix + censored_response + postfix);
+
+    if (typeof msg === "object" && msg.hasOwnProperty("author")) {
+      for (const part of messageParts) {
+        msg.reply(part);
       }
     } else {
-      return "abbadabbabot offline";
+      return messageParts.join('\n');
     }
-  } catch (error) {
-    console.error(error);
+  } else {
+    return "abbadabbabot offline";
   }
 }
 
@@ -184,4 +215,4 @@ function splitMessage(message, maxLength = 2000) {
 }
 
 
-export { abbadabbabotSay, sendMessageToChannel };
+export { processImage, abbadabbabotSay, sendMessageToChannel };
