@@ -22,7 +22,7 @@ client.on("ready", () => {
 
 client.on("messageCreate", async (msg) => {
   //ignore self messages
-  if (msg.author.username !== "Abbadabbabot v3.2-b") {
+  if (msg.author.username !== process.env.BOT_NAME) {
     const dn_regex = /dee(?:z|s)?(?:e| )? ?nut(?:s|z)?/i;
 
     if (dn_regex.test(msg.content)) {
@@ -34,7 +34,7 @@ client.on("messageCreate", async (msg) => {
     console.log(`${msg.author.username}: `, msg.content.toLowerCase());
 
     switch (true) {
-      case /^abbadabbabot.*/i.test(msg.content.toLowerCase()):
+      case /^process.env.BOT_TRIGGER.*/i.test(msg.content.toLowerCase()):
         abbadabbabotSay(msg);
         break;
       case /^!engage_chat.*/i.test(msg.content.toLowerCase()):
