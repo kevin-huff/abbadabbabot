@@ -5,9 +5,9 @@ import { HumanMessage, AIMessage } from "@langchain/core/messages";
 import CustomChatMessageHistory from "./CustomChatMessageHistory.js";
 import fetch from 'node-fetch'; // Import fetch for Node.js
 
-const memory_limit = 20;
+const memory_limit = 20; // Setting the memory limit
 const chat = new ChatOpenAI({
-  temperature: 0.5,
+  temperature: 0.9,
   frequencyPenalty: 1.5,
   presencePenalty: 1.5,
   maxTokens: 700,
@@ -23,7 +23,7 @@ const chatPrompt = ChatPromptTemplate.fromMessages([
   ["human", "{input}"],
 ]);
 
-const chatHistory = new CustomChatMessageHistory("discord_session");
+const chatHistory = new CustomChatMessageHistory("discord_session", memory_limit);
 
 const chain = new ConversationChain({
   memory: chatHistory,

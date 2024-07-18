@@ -1,60 +1,39 @@
-import { BaseListChatMessageHistory } from "@langchain/core/chat_history";
-import {
-  BaseMessage,
-  mapChatMessagesToStoredMessages,
-  mapStoredMessagesToChatMessages,
-  HumanMessage,
-  AIMessage,
-} from "@langchain/core/messages";
+import { HumanMessage, AIMessage } from "@langchain/core/messages";
 
-class CustomChatMessageHistory extends BaseListChatMessageHistory {
-  constructor(sessionId) {
-    super();
+class CustomChatMessageHistory {
+  constructor(sessionId, memoryLimit = 20) {
     this.sessionId = sessionId;
-    this.fakeDatabase = {}; // Simulate a real database layer. Stores serialized objects.
-  }
-
-  async getMessages() {
-    const messages = this.fakeDatabase[this.sessionId] || [];
-    return mapStoredMessagesToChatMessages(messages);
+    this.memoryLimit = memoryLimit;
+    this.messages = [];
   }
 
   async addMessage(message) {
-    if (!this.fakeDatabase[this.sessionId]) {
-      this.fakeDatabase[this.sessionId] = [];
+    this.messages.push(message);
+    if (this.messages.length > this.memoryLimit) {
+      this.messages.shift(); // Remove the oldest message
     }
-    const serializedMessages = mapChatMessagesToStoredMessages([message]);
-    this.fakeDatabase[this.sessionId].push(serializedMessages[0]);
+    this.logMemoryContext();
   }
 
-  async addMessages(messages) {
-    if (!this.fakeDatabase[this.sessionId]) {
-      this.fakeDatabase[this.sessionId] = [];
-    }
-    const existingMessages = this.fakeDatabase[this.sessionId];
-    const serializedMessages = mapChatMessagesToStoredMessages(messages);
-    this.fakeDatabase[this.sessionId] = existingMessages.concat(serializedMessages);
+  async getMessages() {
+    return this.messages;
   }
 
   async clear() {
-    delete this.fakeDatabase[this.sessionId];
+    this.messages = [];
+    this.logMemoryContext();
   }
 
   async loadMemoryVariables() {
-    const messages = await this.getMessages();
-    return {
-      history: messages,
-    };
+    return { history: this.messages };
   }
 
-  async saveContext(inputs, outputs) {
-    const userMessage = new HumanMessage({
-      content: inputs.input || '',
-    });
-    const aiMessage = new AIMessage({
-      content: outputs.response || '',
-    });
-    await this.addMessages([userMessage, aiMessage]);
+  async saveContext(_input, _output) {
+    // No-op for this implementation
+  }
+
+  logMemoryContext() {
+    console.log(`Current memory context size: ${this.messages.length} messages.`);
   }
 }
 
