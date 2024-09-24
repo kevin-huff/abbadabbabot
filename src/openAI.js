@@ -7,10 +7,10 @@ import fetch from 'node-fetch'; // Import fetch for Node.js
 
 const memory_limit = 20; // Setting the memory limit
 const chat = new ChatOpenAI({
-  temperature: 0.9,
-  frequencyPenalty: 1.5,
-  presencePenalty: 1.5,
-  max_completion_tokens: 700,
+  temperature: 1.0,
+  frequencyPenalty: 0,
+  presencePenalty: 0,
+  max_completion_tokens: 1500,
   user: "discord",
   modelName: "o1-mini",
 });
