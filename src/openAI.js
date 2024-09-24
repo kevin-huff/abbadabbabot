@@ -10,7 +10,7 @@ const chat = new ChatOpenAI({
   temperature: 0.9,
   frequencyPenalty: 1.5,
   presencePenalty: 1.5,
-  maxTokens: 700,
+  max_completion_tokens: 700,
   user: "discord",
   modelName: "o1-mini",
 });
