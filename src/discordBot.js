@@ -34,7 +34,7 @@ client.on("messageCreate", async (msg) => {
     console.log(`${msg.author.username}: `, msg.content.toLowerCase());
 
     switch (true) {
-      case new RegExp(`^\\b${process.env.BOT_TRIGGER}.*`, 'i').test(msg.content.toLowerCase()):
+      case new RegExp(`^\\b${process.env.BOT_TRIGGER}.*`, 'i').test(msg.content.toLowerCase()):fet
         abbadabbabotSay(msg);
         break;
       case /^!engage_chat.*/i.test(msg.content.toLowerCase()):
@@ -176,7 +176,9 @@ client.on("voiceStateUpdate", (oldMember, newMember) => {
   var users_to_ignore = process.env.USERS_TO_IGNORE
     ? process.env.USERS_TO_IGNORE.split(",")
     : [];
-  var channel_to_ignore = [process.env.CHANNEL_TO_IGNORE];
+  var channel_to_ignore = process.env.CHANNEL_TO_IGNORE
+    ? process.env.CHANNEL_TO_IGNORE.split(",")
+    : [];
   var secondary_notification_only = [process.env.SECONDARY_NOTIFICATION_ONLY];
   var notification_channel = client.channels.cache.get(
     process.env.NOTIFICATION_CHANNEL
