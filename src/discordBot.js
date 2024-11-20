@@ -34,7 +34,7 @@ client.on("messageCreate", async (msg) => {
     console.log(`${msg.author.username}: `, msg.content.toLowerCase());
 
     switch (true) {
-      case new RegExp(`^\\b${process.env.BOT_TRIGGER}.*`, 'i').test(msg.content.toLowerCase()):fet
+      case new RegExp(`^\\b${process.env.BOT_TRIGGER}.*`, 'i').test(msg.content.toLowerCase());
         abbadabbabotSay(msg);
         break;
       case /^!engage_chat.*/i.test(msg.content.toLowerCase()):
