@@ -12,7 +12,7 @@ const chat = new ChatOpenAI({
   presencePenalty: 0,
   max_completion_tokens: 1500,
   user: "discord",
-  modelName: "o1-mini",
+  modelName: "o1",
 });
 
 const systemPrompt = process.env.SYSTEM_PROMPT || "You are a helpful assistant that can answer questions, provide information, and assist with tasks. You can also provide emotional support and engage in casual conversation. You are a friendly and helpful assistant that is always ready to help.";
